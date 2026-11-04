@@ -1,7 +1,8 @@
 # Brainwires Homebrew tap
 
 ```sh
-brew trust --cask brainwires/tap/qutty   # Homebrew 7+ asks you to trust third-party taps
+brew tap brainwires/tap
+brew trust --cask brainwires/tap/qutty   # Homebrew 7+ asks you to trust casks from other taps
 brew install --cask brainwires/tap/qutty
 ```
 
