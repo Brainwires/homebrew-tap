@@ -8,7 +8,7 @@ cask "qutty" do
   url "https://github.com/Brainwires/qutty/releases/download/v#{version}/Qutty-#{version}-#{arch}.dmg"
   name "Qutty"
   desc "Tiling terminal emulator"
-  homepage "https://qutty.org/"
+  homepage "https://github.com/Brainwires/qutty"
 
   livecheck do
     url :url
