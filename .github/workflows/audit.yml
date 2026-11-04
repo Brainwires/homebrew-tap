@@ -1,0 +1,17 @@
+name: Audit
+on:
+  push:
+  pull_request:
+jobs:
+  audit:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Tap this checkout
+        run: |
+          mkdir -p "$(brew --repository)/Library/Taps/brainwires"
+          ln -s "$GITHUB_WORKSPACE" "$(brew --repository)/Library/Taps/brainwires/homebrew-tap"
+      - run: brew trust brainwires/tap
+      - run: brew style brainwires/tap
+      - run: brew audit --cask --strict --online brainwires/tap/qutty
+      - run: brew install --cask brainwires/tap/qutty && test -d /Applications/Qutty.app
