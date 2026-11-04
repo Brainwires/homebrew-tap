@@ -15,6 +15,8 @@ cask "qutty" do
     strategy :github_latest
   end
 
+  depends_on :macos
+
   app "Qutty.app"
 
   zap trash: [
