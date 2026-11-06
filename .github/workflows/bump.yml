@@ -1,0 +1,55 @@
+name: Bump qutty
+# Follows Qutty's releases on its own, so Qutty's release workflow needs no token for this repo:
+# on a schedule (and on demand) it reads the latest published release of Brainwires/qutty, and if
+# its version is newer than the cask's, updates the version and both sha256s (from the release's
+# own .sha256 assets), audits the cask and pushes with this repo's GITHUB_TOKEN.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: bump-qutty
+jobs:
+  bump:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Read the latest Qutty release
+        id: rel
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          TAG=$(gh release view -R Brainwires/qutty --json tagName -q .tagName)
+          VERSION="${TAG#v}"
+          CURRENT=$(sed -n 's/^  version "\(.*\)"/\1/p' Casks/qutty.rb)
+          echo "latest=$VERSION cask=$CURRENT"
+          if [ "$VERSION" = "$CURRENT" ]; then echo "bump=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          gh release download "$TAG" -R Brainwires/qutty -p "Qutty-$VERSION-arm64.dmg.sha256" \
+            -p "Qutty-$VERSION-x86_64.dmg.sha256" -D "$RUNNER_TEMP/sums"
+          ARM=$(cut -d' ' -f1 "$RUNNER_TEMP/sums/Qutty-$VERSION-arm64.dmg.sha256")
+          INTEL=$(cut -d' ' -f1 "$RUNNER_TEMP/sums/Qutty-$VERSION-x86_64.dmg.sha256")
+          sed -i '' -E \
+            -e "s/^  version \".*\"/  version \"$VERSION\"/" \
+            -e "s/(sha256 arm: +)\"[0-9a-f]{64}\"/\1\"$ARM\"/" \
+            -e "s/(intel: +)\"[0-9a-f]{64}\"/\1\"$INTEL\"/" \
+            Casks/qutty.rb
+          grep -q "version \"$VERSION\"" Casks/qutty.rb && grep -q "$ARM" Casks/qutty.rb && grep -q "$INTEL" Casks/qutty.rb
+          echo "bump=true" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Audit the updated cask
+        if: steps.rel.outputs.bump == 'true'
+        run: |
+          mkdir -p "$(brew --repository)/Library/Taps/brainwires"
+          ln -s "$GITHUB_WORKSPACE" "$(brew --repository)/Library/Taps/brainwires/homebrew-tap"
+          brew trust brainwires/tap
+          brew audit --cask --strict --online brainwires/tap/qutty
+      - name: Push
+        if: steps.rel.outputs.bump == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -qam "qutty ${{ steps.rel.outputs.version }}"
+          git push
