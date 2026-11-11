@@ -1,9 +1,9 @@
 cask "qutty" do
   arch arm: "arm64", intel: "x86_64"
 
-  version "0.4.0"
-  sha256 arm:   "bd95dd7d29db0a701aece973b6f4e524b0b1780bf803d202b2fa7ebdff0e9575",
-         intel: "667de467016d05c35e187d1b0780d045dcdc1609b55fac05d2ea11b6046022e9"
+  version "0.5.0"
+  sha256 arm:   "1f3e89fe2c73fa0f429e18bf4d0e6f9b7d6c1ef6ad19d958599760994961c6de",
+         intel: "6e106f845fff3735514e5902cfb928af95288fec4439a1859be7fdb8a37aeb50"
 
   url "https://github.com/Brainwires/qutty/releases/download/v#{version}/Qutty-#{version}-#{arch}.dmg"
   name "Qutty"
