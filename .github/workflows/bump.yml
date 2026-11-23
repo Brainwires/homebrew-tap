@@ -41,6 +41,8 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Audit the updated cask
         if: steps.rel.outputs.bump == 'true'
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
         run: |
           mkdir -p "$(brew --repository)/Library/Taps/brainwires"
           ln -s "$GITHUB_WORKSPACE" "$(brew --repository)/Library/Taps/brainwires/homebrew-tap"
